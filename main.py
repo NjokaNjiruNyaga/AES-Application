@@ -3,97 +3,97 @@ from tkinter import messagebox
 from aes_utils import generate_key, encrypt_message, decrypt_message
 from sms_sender import generate_otp, send_sms
 
-#  Add your phone number here (used to simulate SMS)
-receiver_number = "+254793967745"  # Replace with your own number for testing
-
-
-# Create main window
+# Create the main landing window
 window = tk.Tk()
-window.title("Secure AES Communicator")
-window.geometry("500x500")
+window.title("Secure AES Communication Portal")
+window.geometry("600x650")
+window.configure(bg="white")
 
-# Message input
-tk.Label(window, text="Enter your message:").pack()
-message_entry = tk.Text(window, height=5, width=50)
+# === STYLES ===
+HEADER_FONT = ("Arial", 16, "bold")
+LABEL_FONT = ("Arial", 12)
+
+# === UI Elements ===
+tk.Label(window, text="🔐 Secure AES Communication", font=HEADER_FONT, bg="white").pack(pady=10)
+
+# === Message Entry ===
+tk.Label(window, text="Enter Message to Encrypt:", font=LABEL_FONT, bg="white").pack()
+message_frame = tk.Frame(window, bg="white", padx=10, pady=5)
+message_frame.pack()
+message_entry = tk.Text(message_frame, height=5, width=70, bd=2, relief="solid")
 message_entry.pack()
 
-# Encrypt & Send button (to be linked later)
-encrypt_btn = tk.Button(window, text="Encrypt & Send")
-encrypt_btn.pack()
-
-
-# Encrypted message input
-tk.Label(window, text="Paste encrypted message here:").pack()
-encrypted_text = tk.Text(window, height=5, width=50)
+# === Encrypted Message Display ===
+tk.Label(window, text="Encrypted Message:", font=LABEL_FONT, bg="white").pack()
+encrypted_frame = tk.Frame(window, bg="white", padx=10, pady=5)
+encrypted_frame.pack()
+encrypted_text = tk.Text(encrypted_frame, height=5, width=70, bd=2, relief="solid")
 encrypted_text.pack()
 
-# OTP input
-tk.Label(window, text="Enter OTP:").pack()
-otp_entry = tk.Entry(window)
+# === OTP Input ===
+tk.Label(window, text="Enter OTP:", font=LABEL_FONT, bg="white").pack()
+otp_frame = tk.Frame(window, bg="white", padx=10, pady=5)
+otp_frame.pack()
+otp_entry = tk.Entry(otp_frame, width=30, bd=2, relief="solid")
 otp_entry.pack()
 
-# Decrypt button (to be linked later)
-decrypt_btn = tk.Button(window, text="Decrypt")
-decrypt_btn.pack()
+# === Output ===
+tk.Label(window, text="Decrypted Message:", font=LABEL_FONT, bg="white").pack()
+output_frame = tk.Frame(window, bg="white", padx=10, pady=5)
+output_frame.pack()
+output_box = tk.Text(output_frame, height=5, width=70, bd=2, relief="solid")
+output_box.pack()
 
+# === Backend Variables ===
+receiver_number = "+254793967745"  # Replace with your real number (for live mode)
 
-
-# Output area
-output_label = tk.Label(window, text="Decrypted message:")
-output_label.pack()
-
-def handle_decrypt():
-    encrypted_msg = encrypted_text.get("1.0", tk.END).strip()
-    input_otp = otp_entry.get().strip()
-
-    #  Step 1: Check if encrypted message and OTP were entered
-    if not encrypted_msg:
-        messagebox.showerror("Error", "Please paste the encrypted message.")
-        return
-
-    if not input_otp:
-        messagebox.showerror("Error", "Please enter the OTP.")
-        return
-
-    #  Step 2: Verify OTP matches the one generated earlier
-    if input_otp != getattr(window, 'otp', None):
-        messagebox.showerror("Error", "Invalid OTP.")
-        return
-
-    try:
-        #  Step 3: Try decrypting using the stored AES key
-        decrypted = decrypt_message(window.key, encrypted_msg)
-        output_label.config(text=f"Decrypted message: {decrypted}")
-    except Exception as e:
-        messagebox.showerror("Error", f"Decryption failed: {str(e)}")
-
+# === Encrypt and Send OTP ===
 def handle_encrypt():
     message = message_entry.get("1.0", tk.END).strip()
-
     if not message:
-        messagebox.showerror("Error", "Please enter a message.")
+        messagebox.showerror("Error", "Message cannot be empty")
         return
 
     key = generate_key()
     encrypted = encrypt_message(key, message)
     otp = generate_otp()
 
-    # Store key and OTP for decryption
     window.key = key
     window.otp = otp
 
-    # Simulate sending SMS
-    send_sms(receiver_number, otp)
-
-    # Show encrypted message in the box
     encrypted_text.delete("1.0", tk.END)
     encrypted_text.insert(tk.END, encrypted)
 
-    messagebox.showinfo("Message Encrypted", "Encryption complete. OTP sent via SMS.")
-    
-encrypt_btn.config(command=handle_encrypt)
+    if send_sms(receiver_number, otp):
+        messagebox.showinfo("OTP Sent", f"OTP has been sent to {receiver_number}")
+    else:
+        messagebox.showerror("SMS Failed", "Could not send OTP. Check credentials or API key.")
 
-decrypt_btn.config(command=handle_decrypt)
-# Run the app
+# === Decrypt ===
+def handle_decrypt():
+    encrypted_msg = encrypted_text.get("1.0", tk.END).strip()
+    input_otp = otp_entry.get().strip()
+
+    if not encrypted_msg:
+        messagebox.showerror("Error", "Paste the encrypted message.")
+        return
+    if not input_otp:
+        messagebox.showerror("Error", "Enter the OTP sent to your phone.")
+        return
+    if input_otp != getattr(window, 'otp', None):
+        messagebox.showerror("Error", "Incorrect OTP.")
+        return
+
+    try:
+        decrypted = decrypt_message(window.key, encrypted_msg)
+        output_box.delete("1.0", tk.END)
+        output_box.insert(tk.END, decrypted)
+    except Exception as e:
+        messagebox.showerror("Error", f"Decryption failed: {str(e)}")
+
+# === Buttons ===
+tk.Button(window, text="🔐 Encrypt & Send OTP", command=handle_encrypt, bg="#4CAF50", fg="white", width=30).pack(pady=10)
+tk.Button(window, text="🔓 Decrypt Message", command=handle_decrypt, bg="#2196F3", fg="white", width=30).pack(pady=5)
+
+# === Start GUI ===
 window.mainloop()
-
