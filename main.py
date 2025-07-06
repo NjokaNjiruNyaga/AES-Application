@@ -6,15 +6,15 @@ from sms_sender import generate_otp, send_sms
 # Create the main landing window
 window = tk.Tk()
 window.title("Secure AES Communication Portal")
-window.geometry("600x650")
+window.geometry("600x700")   # Size of the GUI if you try to change the width and height
 window.configure(bg="white")
 
-# === STYLES ===
+# STYLES 
 HEADER_FONT = ("Arial", 16, "bold")
-LABEL_FONT = ("Arial", 12)
+LABEL_FONT = ("Arial", 10)
 
-# === UI Elements ===
-tk.Label(window, text="🔐 Secure AES Communication", font=HEADER_FONT, bg="white").pack(pady=10)
+# === UI Elements
+tk.Label(window, text="Secure AES Communication", font=HEADER_FONT, bg="white").pack(pady=10)
 
 # === Message Entry ===
 tk.Label(window, text="Enter Message to Encrypt:", font=LABEL_FONT, bg="white").pack()
@@ -22,6 +22,14 @@ message_frame = tk.Frame(window, bg="white", padx=10, pady=5)
 message_frame.pack()
 message_entry = tk.Text(message_frame, height=5, width=70, bd=2, relief="solid")
 message_entry.pack()
+
+# === Phone Number Entry ===
+tk.Label(window, text="Enter Phone Number", font=LABEL_FONT, bg="white").pack()
+phone_frame = tk.Frame(window, bg="white", padx=10, pady=5)
+phone_frame.pack()
+phone_entry = tk.Entry(phone_frame, width=30, bd=2, relief="solid")
+phone_entry.insert(0, "+254")
+phone_entry.pack()
 
 # === Encrypted Message Display ===
 tk.Label(window, text="Encrypted Message:", font=LABEL_FONT, bg="white").pack()
@@ -44,14 +52,17 @@ output_frame.pack()
 output_box = tk.Text(output_frame, height=5, width=70, bd=2, relief="solid")
 output_box.pack()
 
-# === Backend Variables ===
-receiver_number = "+254793967745"  # Replace with your real number (for live mode)
-
 # === Encrypt and Send OTP ===
 def handle_encrypt():
-    message = message_entry.get("1.0", tk.END).strip()
+    message = message_entry.get("1.0",tk.END).strip()
+    receiver_number = phone_entry.get().strip()
+
     if not message:
         messagebox.showerror("Error", "Message cannot be empty")
+        return
+
+    if not receiver_number.startswith("+254") or len(receiver_number) < 10:
+        messagebox.showerror("Error", "Enter a valid phone number (e.g. +2547xxxxxxx)")
         return
 
     key = generate_key()
@@ -67,9 +78,9 @@ def handle_encrypt():
     if send_sms(receiver_number, otp):
         messagebox.showinfo("OTP Sent", f"OTP has been sent to {receiver_number}")
     else:
-        messagebox.showerror("SMS Failed", "Could not send OTP. Check credentials or API key.")
+        messagebox.showerror("SMS Failed", "Could not send OTP. Check your internet or credentials.")
 
-# === Decrypt ===
+#   Decrypt 
 def handle_decrypt():
     encrypted_msg = encrypted_text.get("1.0", tk.END).strip()
     input_otp = otp_entry.get().strip()
@@ -91,9 +102,9 @@ def handle_decrypt():
     except Exception as e:
         messagebox.showerror("Error", f"Decryption failed: {str(e)}")
 
-# === Buttons ===
-tk.Button(window, text="🔐 Encrypt & Send OTP", command=handle_encrypt, bg="#4CAF50", fg="white", width=30).pack(pady=10)
-tk.Button(window, text="🔓 Decrypt Message", command=handle_decrypt, bg="#2196F3", fg="white", width=30).pack(pady=5)
+# Buttons 
+tk.Button(window, text=" Encrypt & Send OTP", command=handle_encrypt, bg="#4CAF50", fg="white", width=30).pack(pady=10)
+tk.Button(window, text=" Decrypt Message", command=handle_decrypt, bg="#2196F3", fg="white", width=30).pack(pady=5)
 
 # === Start GUI ===
 window.mainloop()

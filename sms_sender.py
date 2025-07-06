@@ -1,17 +1,20 @@
 import africastalking
 import random
+import string
 
 # ✅ Africa's Talking credentials (use sandbox credentials for testing)
-username = "sandbox"  # use 'sandbox' for testing
-api_key = "atsk_4bbb872bad0e91483f82a0c1586b1ea39aa3bb7dbcda637e254228586abb45db4f0a2f0e"  # replace with your API key
+username = "Njoks"  # use 'sandbox' for testing(Give your own explanation)
+api_key = "atsk_3637a04bfad012439e75be6ff21c9152b1b03cb0263e7d40e72fbd2e8615a385b2bf3cc5"  # replace with your API key
 
 # ✅ Initialize Africa's Talking
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
-# ✅ OTP Generator
-def generate_otp():
-    return str(random.randint(100000, 999999))
+# This  OTP Generator
+def generate_otp(length=8):
+    characters = string.ascii_uppercase + string.digits  # A-Z and 0-9
+    otp = ''.join(random.choices(characters, k=length))
+    return otp
 
 # ✅ Send SMS Function
 def send_sms(phone_number, otp):
